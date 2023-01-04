@@ -36,8 +36,8 @@ main (int argc, char **argv)
 
   MPI_MergeSort (arr, 0, size - 1, 0, NULL);
 
-  if (rank == 0)
-    printarr (arr, size, "sorted");
+//  if (rank == 0)
+//    printarr (arr, size, "sorted");
 
   free (arr);
 

@@ -26,14 +26,14 @@ main (int argc, char **argv)
   if (rank == 0)
     {
       arr = randint (size);
-      printarr (arr, size, "randint");
+//      printarr (arr, size, "randint");
     }
 
   MPI_MergeSort_tp (arr, &size);
 
   if (rank == 0)
     {
-      printarr (arr, size, "sorted");
+//      printarr (arr, size, "sorted");
       free (arr);
     }
   return MPI_Finalize ();
