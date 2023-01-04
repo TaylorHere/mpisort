@@ -6,12 +6,10 @@
 #define _MERGESORT_H_
 
 void
-mergeSort (int* arr, int l, int r);
+mergeSort (int *arr, int l, int r);
 
 void
-merge (int* arr, int l, int m, int r);
+merge (int *arr, int *L, int *M, int n1, int n2, int k);
 
-int*
-randint (int size);
 
 #endif //_MERGESORT_H_

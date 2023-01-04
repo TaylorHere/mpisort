@@ -7,9 +7,10 @@
 #include "MPI_MergeSort.h"
 #include "mergeSort.h"
 #include "mpi.h"
+#include "utils.h"
 
 void
-pad (int* arr, int* size)
+pad (int *arr, int *size)
 {
 
   int world_size;
@@ -38,7 +39,7 @@ pad (int* arr, int* size)
  * only reduce some data move ops, can not handle too much data because of the origin data will be double in all process.
  */
 void
-MPI_MergeSort_tp (int* arr, int* size)
+MPI_MergeSort_tp (int *arr, int *size)
 {
   int world_size;
   MPI_Comm_size (MPI_COMM_WORLD, &world_size);
@@ -54,7 +55,7 @@ MPI_MergeSort_tp (int* arr, int* size)
   MPI_Bcast (size, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
   int sub_size = (*size / world_size);
-  int* sub_arr = calloc (sub_size, sizeof (int));
+  int *sub_arr = calloc (sub_size, sizeof (int));
 
   MPI_Scatter (arr, sub_size, MPI_INT, sub_arr, sub_size, MPI_INT, 0,
                MPI_COMM_WORLD);
@@ -70,4 +71,91 @@ MPI_MergeSort_tp (int* arr, int* size)
     {
       mergeSort (arr, 0, *size - 1);
     }
+}
+
+/*
+ * Recursive MPI MergeSort Version
+ *
+ */
+void
+MPI_MergeSort (int *arr, int l, int r, int node, MPI_Win win)
+{
+  int rank, world_size;
+  MPI_Comm_rank (MPI_COMM_WORLD, &rank);
+  MPI_Comm_size (MPI_COMM_WORLD, &world_size);
+
+  MPI_Group group;
+  MPI_Comm_group (MPI_COMM_WORLD, &group);
+
+  if (node == 0)
+    {
+      MPI_Win_create (arr, (MPI_Aint) ((r + 1) * sizeof (int)),
+                      sizeof (int), MPI_INFO_NULL, MPI_COMM_WORLD, &win);
+    }
+
+  if (l < r)
+    {
+      int m = l + (r - l) / 2;
+
+      MPI_MergeSort (arr, l, m, 2 * node + 1, win);
+      MPI_MergeSort (arr, m + 1, r, 2 * node + 2, win);
+
+      MPI_Win_fence (0, win);
+      if (node % world_size == rank)
+        {
+
+
+          int nl = m - l + 1;
+          int nm = r - m;
+
+          int L[nl], M[nm];
+
+          MPI_Get (L, nl, MPI_INT, 0, l, nl, MPI_INT, win);
+          MPI_Get (M, nm, MPI_INT, 0, m + 1, nm, MPI_INT, win);
+
+          int i, j, k;
+          i = 0;
+          j = 0;
+          k = l;
+
+          while (i < nl && j < nm)
+            {
+              int T;
+              if (L[i] <= M[j])
+                {
+                  T = L[i];
+                  i++;
+                }
+              else
+                {
+                  T = M[j];
+                  j++;
+                }
+              MPI_Put (&T, 1, MPI_INT, 0, k, 1, MPI_INT, win);
+              k++;
+            }
+
+          while (i < nl)
+            {
+              int T = L[i];
+              MPI_Put (&T, 1, MPI_INT, 0, k, 1, MPI_INT, win);
+              i++;
+              k++;
+            }
+
+          while (j < nm)
+            {
+              int T = M[j];
+              MPI_Put (&T, 1, MPI_INT, 0, k, 1, MPI_INT, win);
+              j++;
+              k++;
+            }
+
+        }
+      MPI_Win_fence (0, win);
+
+    }
+
+  if (node == 0)
+    MPI_Win_free (&win);
 }

@@ -1,3 +1,6 @@
+//
+// Created by taylor on 23-1-4.
+//
 #include <stdio.h>
 #include <stdlib.h>
 #include <mpi.h>
@@ -11,7 +14,7 @@ main (int argc, char **argv)
 
   if (argc < 2)
     {
-      printf ("mpirun MPI_mergeSort_tp_test <number size>");
+      printf ("mpirun MPI_mergeSort_recursive_test <number size>");
       return -1;
     }
 
@@ -22,19 +25,21 @@ main (int argc, char **argv)
 
   int size = atoi (argv[1]);
   int *arr = NULL;
+  if (rank == 0)
+    arr = randint(size);
+  else
+    arr = malloc (0);
+//
+//  if (rank == 0)
+//    printarr (arr, size, "origin");
+
+
+  MPI_MergeSort (arr, 0, size - 1, 0, NULL);
 
   if (rank == 0)
-    {
-      arr = randint (size);
-      printarr (arr, size, "randint");
-    }
+    printarr (arr, size, "sorted");
 
-  MPI_MergeSort_tp (arr, &size);
+  free (arr);
 
-  if (rank == 0)
-    {
-      printarr (arr, size, "sorted");
-      free (arr);
-    }
   return MPI_Finalize ();
 }
