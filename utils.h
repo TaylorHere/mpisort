@@ -20,4 +20,6 @@ seq (int size);
 void
 printarr (int *arr, int size, char *label);
 
+void
+printRank ();
 #endif //_UTILS_H_

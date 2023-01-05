@@ -17,4 +17,7 @@ cmake targets:
 - - and the memory used is smaller than Task Parallel Version
 - - but creates a lot of RMA ops, that may slow down the speed
 - - slow as fuck
-- 
+- **mergeSort_omp_test**
+- - same algorithm with MPI_MergeSort_recursive_test
+- - slow as fuck.
+- - but it's easier to write because we don't need to move data explicitly.

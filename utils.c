@@ -6,6 +6,7 @@
 #include <time.h>
 #include <stdio.h>
 #include <mpi.h>
+#include <omp.h>
 #include "utils.h"
 
 int *
@@ -50,13 +51,17 @@ zeros (int size)
   return numbers;
 }
 
-
-
 void
 printarr (int *arr, int size, char *label)
 {
   int rank;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  int use_mpi;
+  MPI_Initialized (&use_mpi);
+
+  if (use_mpi)
+    MPI_Comm_rank (MPI_COMM_WORLD, &rank);
+  else
+    rank = omp_get_thread_num ();
 
   printf ("%s@rank-%d: ", label, rank);
   for (int i = 0; i < size; ++i)
@@ -65,3 +70,21 @@ printarr (int *arr, int size, char *label)
     }
   printf ("\r\n");
 }
+
+void
+printRank ()
+{
+  int use_mpi;
+  MPI_Initialized (&use_mpi);
+
+  if (use_mpi)
+    {
+      int rank;
+      MPI_Comm_rank (MPI_COMM_WORLD, &rank);
+      printf ("rank: %d\r\n", rank);
+    }
+  else
+    printf ("rank: %d\r\n", omp_get_thread_num ());
+}
+
+
