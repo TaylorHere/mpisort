@@ -104,11 +104,10 @@ MPI_MergeSort (int *arr, int l, int r, int node, MPI_Win win)
       if (node % world_size == rank)
         {
 
-
           int nl = m - l + 1;
           int nm = r - m;
 
-          int L[nl], M[nm];
+          int L[nl], M[nm], T[nl + nm];
 
           MPI_Get (L, nl, MPI_INT, 0, l, nl, MPI_INT, win);
           MPI_Get (M, nm, MPI_INT, 0, m + 1, nm, MPI_INT, win);
@@ -116,41 +115,37 @@ MPI_MergeSort (int *arr, int l, int r, int node, MPI_Win win)
           int i, j, k;
           i = 0;
           j = 0;
-          k = l;
+          k = 0;
 
           while (i < nl && j < nm)
             {
-              int T;
               if (L[i] <= M[j])
                 {
-                  T = L[i];
+                  T[k] = L[i];
                   i++;
                 }
               else
                 {
-                  T = M[j];
+                  T[k] = M[j];
                   j++;
                 }
-              MPI_Put (&T, 1, MPI_INT, 0, k, 1, MPI_INT, win);
               k++;
             }
 
           while (i < nl)
             {
-              int T = L[i];
-              MPI_Put (&T, 1, MPI_INT, 0, k, 1, MPI_INT, win);
+              T[k] = L[i];
               i++;
               k++;
             }
 
           while (j < nm)
             {
-              int T = M[j];
-              MPI_Put (&T, 1, MPI_INT, 0, k, 1, MPI_INT, win);
+              T[k] = M[j];
               j++;
               k++;
             }
-
+          MPI_Put (&T, nl + nm, MPI_INT, 0, l, nl + nm, MPI_INT, win);
         }
       MPI_Win_fence (0, win);
 
