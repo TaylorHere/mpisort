@@ -109,8 +109,8 @@ MPI_MergeSort (int *arr, int l, int r, int node, MPI_Win win)
 
           int L[nl], M[nm], T[nl + nm];
 
-          MPI_Get (L, nl, MPI_INT, 0, l, nl, MPI_INT, win);
-          MPI_Get (M, nm, MPI_INT, 0, m + 1, nm, MPI_INT, win);
+          MPI_Get (&L, nl, MPI_INT, 0, l, nl, MPI_INT, win);
+          MPI_Get (&M, nm, MPI_INT, 0, m + 1, nm, MPI_INT, win);
 
           int i, j, k;
           i = 0;
